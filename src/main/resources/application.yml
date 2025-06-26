@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: spring-ai-demo
+  profiles:
+    active: dev
+  ai:
+    openai:
+      api-key: "demo"
+      base-url: https://open.bigmodel.cn/api/paas/v4/
+      chat:
+        completions-path: /chat/completions
+        options:
+          model: glm-4-flash
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/aichat?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+
+server:
+  port: 9000
+  servlet:
+    context-path: /api
