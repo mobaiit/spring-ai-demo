@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="false">
+    <property name="log.path" value="/var/local/mlog/ai"/>
+    <property name="log.name" value="ai"/>
+    <!-- 彩色日志格式 -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%18.18t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+    <springProperty name="applicationName" scope="context" source="spring.application.name"/>
+
+    <!-- 修复过时的 conversionRule 警告 -->
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" class="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!-- Console log output -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 添加异步日志提升性能 -->
+    <appender name="ASYNC_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="debug" />
+    </appender>
+
+    <appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/${log.name}.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [${applicationName},%X{traceId:-},%X{spanId:-}] %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/${log.name}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>500MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="error" />
+    </appender>
+
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/error.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [${applicationName},%X{traceId:-},%X{spanId:-}] %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>500MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="ASYNC_WARN" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="warn" />
+    </appender>
+
+    <appender name="warn" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/warn.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [${applicationName},%X{traceId:-},%X{spanId:-}] %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/warn.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>500MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 环境特定配置 -->
+    <springProfile name="dev">
+        <logger name="com.ai.dao" level="DEBUG" />
+        <logger name="org.springframework.ai" level="DEBUG" />
+        <root level="INFO">
+            <appender-ref ref="console"/>
+            <appender-ref ref="ASYNC_DEBUG"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_WARN"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.ai.dao" level="INFO" />
+        <logger name="org.springframework.ai" level="INFO" />
+        <root level="INFO">
+            <appender-ref ref="ASYNC_DEBUG"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_WARN"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!dev &amp; !prod">
+        <logger name="com.ai.dao" level="DEBUG" />
+        <logger name="org.springframework.ai" level="DEBUG" />
+        <root level="INFO">
+            <appender-ref ref="console"/>
+            <appender-ref ref="ASYNC_DEBUG"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_WARN"/>
+        </root>
+    </springProfile>
+
+    <!-- 保留您原有的 logger 配置 -->
+    <logger name="org.activiti.engine.impl.db" level="DEBUG">
+        <appender-ref ref="ASYNC_DEBUG"/>
+    </logger>
+    <logger name="io.netty" level="ERROR" />
+    <logger name="org.bytedeco" level="OFF"/>
+    <logger name="org.bytedeco.ffmpeg" level="OFF" />
+    <logger name="org.bytedeco.javacv" level="OFF" />
+    <logger name="org.apache.ibatis" level="DEBUG" />
+
+    <!--nacos 心跳 INFO 屏蔽-->
+    <logger name="com.alibaba.nacos" level="OFF">
+        <appender-ref ref="ASYNC_ERROR"/>
+    </logger>
+    <logger name="org.springframework.context.support.PostProcessorRegistrationDelegate" level="OFF">
+        <appender-ref ref="ASYNC_ERROR"/>
+    </logger>
+    <logger name="springfox.documentation.spring.web.readers.operation.CachingOperationNameGenerator" level="OFF">
+        <appender-ref ref="ASYNC_ERROR"/>
+    </logger>
+    <logger name="io.swagger.models.parameters.AbstractSerializableParameter" level="OFF">
+        <appender-ref ref="ASYNC_ERROR"/>
+    </logger>
+</configuration>

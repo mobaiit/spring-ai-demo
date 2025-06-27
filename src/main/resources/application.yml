@@ -16,8 +16,12 @@ spring:
     url: jdbc:mysql://localhost:3306/aichat?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 123456
-
 server:
   port: 9000
   servlet:
     context-path: /api
+# searchAPI
+search-api:
+  api-key: 你的 API Key
+logging:
+  config: classpath:logback-spring.xml

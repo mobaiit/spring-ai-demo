@@ -1,8 +1,8 @@
 package com.ai.demo.controller;
 
+import com.ai.demo.advisor.MyLoggerAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +21,7 @@ public class ChatController {
     private final ChatClient chatClient;
 
     public ChatController(ChatClient.Builder chatClientBuilder) {
-        this.chatClient = chatClientBuilder.build();
+        this.chatClient = chatClientBuilder.defaultAdvisors(new MyLoggerAdvisor()).build();
     }
 
 
@@ -31,7 +31,7 @@ public class ChatController {
                 .user(message)
                 .stream()
                 .content();
-        return content.doOnNext(System.out::println).concatWith(Flux.just("[complete]"));
+        return content.concatWith(Flux.just("[complete]"));
     }
 
 }
