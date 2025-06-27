@@ -1,5 +1,6 @@
-package com.ai.demo.tools;
+package com.ai.demo.tools.config;
 
+import com.ai.demo.tools.*;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbacks;
 import org.springframework.beans.factory.annotation.Value;

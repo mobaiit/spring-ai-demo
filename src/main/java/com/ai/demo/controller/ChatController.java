@@ -1,18 +1,19 @@
 package com.ai.demo.controller;
 
-import cn.hutool.core.date.DateUtil;
-import com.ai.demo.advisor.MyLoggerAdvisor;
+import com.ai.demo.agent.ChatDemo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.tool.ToolCallback;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
+
+import java.io.IOException;
 
 /**
  * @author yuchen
@@ -20,36 +21,55 @@ import reactor.core.publisher.Flux;
  */
 @Slf4j
 @RestController
+@Tag(name = "聊天demo")
 @RequestMapping("/ai")
 public class ChatController {
 
     @Resource
-    private ToolCallback[] allTools;
+    private ChatDemo chatDemo;
 
-    private final ChatClient chatClient;
-
-    public ChatController(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
-        this.chatClient = chatClientBuilder
-                .defaultAdvisors(
-                        new PromptChatMemoryAdvisor(chatMemory),
-                        new MyLoggerAdvisor())
-                .build();
+    @Operation(summary = "同步聊天")
+    @GetMapping("/chat/sync")
+    public String doChatWithSync(String message, String chatId) {
+        return chatDemo.doChat(message, chatId);
     }
 
-
-    @GetMapping(value = "/streamChat")
-    public Flux<String> hello(@RequestParam("message") String message) {
-        // 创建带占位符的提示模板
-        String systemPrompt = """
-        您是落墨留白的专属管家，请以友好且愉快的方式与用户聊天。
-        请讲中文，今天的日期是%s
-        """.formatted(DateUtil.now());
-
-        Flux<String> content = chatClient.prompt(systemPrompt)
-                .user(message)
-                .tools(allTools)
-                .stream()
-                .content();
-        return content.concatWith(Flux.just("[complete]"));
+    @Operation(summary = "流式调用 tools Arg")
+    @GetMapping(value = "/chat/stream")
+    public String doChatStream(String message, String chatId) {
+        return chatDemo.doChatWithRag(message, chatId);
     }
+
+    @Operation(summary = "SSE 流式调用,响应文件")
+    @GetMapping(value = "/chat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> doChatWithSSE(String message, String chatId) {
+        return chatDemo.doChatByStream(message, chatId);
+    }
+
+    @Operation(summary = "SSE 流式调用,响应")
+    @GetMapping(value = "/chat/server_sent_event")
+    public Flux<ServerSentEvent<String>> doChatWithServerSentEvent(String message, String chatId) {
+        return chatDemo.doChatByStream(message, chatId)
+                .map(chunk -> ServerSentEvent.<String>builder()
+                        .data(chunk)
+                        .build());
+    }
+
+    @Operation(summary = "SSE 流式调用")
+    @GetMapping(value = "/chat/sse_emitter")
+    public SseEmitter doChatWithServerSseEmitter(String message, String chatId) {
+        // 创建一个超时时间较长的 SseEmitter
+        SseEmitter sseEmitter = new SseEmitter(180000L); // 3 分钟超时
+        // 获取 Flux 响应式数据流并且直接通过订阅推送给 SseEmitter
+        chatDemo.doChatByStream(message, chatId)
+                .subscribe(chunk -> {
+                    try {
+                        sseEmitter.send(chunk);
+                    } catch (IOException e) {
+                        sseEmitter.completeWithError(e);
+                    }
+                }, sseEmitter::completeWithError, sseEmitter::complete);
+        return sseEmitter;
+    }
+
 }

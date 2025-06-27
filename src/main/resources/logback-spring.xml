@@ -130,26 +130,15 @@
     </springProfile>
 
     <!-- 保留您原有的 logger 配置 -->
-    <logger name="org.activiti.engine.impl.db" level="DEBUG">
-        <appender-ref ref="ASYNC_DEBUG"/>
-    </logger>
+    <logger name="org.activiti.engine.impl.db" level="DEBUG" />
+    <logger name="org.apache.ibatis" level="DEBUG" />
     <logger name="io.netty" level="ERROR" />
     <logger name="org.bytedeco" level="OFF"/>
     <logger name="org.bytedeco.ffmpeg" level="OFF" />
     <logger name="org.bytedeco.javacv" level="OFF" />
-    <logger name="org.apache.ibatis" level="DEBUG" />
-
     <!--nacos 心跳 INFO 屏蔽-->
-    <logger name="com.alibaba.nacos" level="OFF">
-        <appender-ref ref="ASYNC_ERROR"/>
-    </logger>
-    <logger name="org.springframework.context.support.PostProcessorRegistrationDelegate" level="OFF">
-        <appender-ref ref="ASYNC_ERROR"/>
-    </logger>
-    <logger name="springfox.documentation.spring.web.readers.operation.CachingOperationNameGenerator" level="OFF">
-        <appender-ref ref="ASYNC_ERROR"/>
-    </logger>
-    <logger name="io.swagger.models.parameters.AbstractSerializableParameter" level="OFF">
-        <appender-ref ref="ASYNC_ERROR"/>
-    </logger>
+    <logger name="com.alibaba.nacos" level="OFF"/>
+    <logger name="org.springframework.context.support.PostProcessorRegistrationDelegate" level="OFF" />
+    <logger name="springfox.documentation.spring.web.readers.operation.CachingOperationNameGenerator" level="OFF"/>
+    <logger name="io.swagger.models.parameters.AbstractSerializableParameter" level="OFF"/>
 </configuration>

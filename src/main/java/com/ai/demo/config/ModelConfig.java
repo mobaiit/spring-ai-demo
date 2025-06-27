@@ -37,10 +37,4 @@ public class ModelConfig {
         // 3. 创建流式聊天客户端
         return ChatClient.create(chatModel);
     }*/
-
-    @Bean
-    public ChatMemory chatMemory() {
-        return new InMemoryChatMemory();
-    }
-
 }
