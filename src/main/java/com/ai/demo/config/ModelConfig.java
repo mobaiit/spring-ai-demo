@@ -1,5 +1,8 @@
 package com.ai.demo.config;
 
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -34,5 +37,10 @@ public class ModelConfig {
         // 3. 创建流式聊天客户端
         return ChatClient.create(chatModel);
     }*/
+
+    @Bean
+    public ChatMemory chatMemory() {
+        return new InMemoryChatMemory();
+    }
 
 }
