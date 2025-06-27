@@ -2,10 +2,12 @@ package com.ai.demo.controller;
 
 import cn.hutool.core.date.DateUtil;
 import com.ai.demo.advisor.MyLoggerAdvisor;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +22,9 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequestMapping("/ai")
 public class ChatController {
+
+    @Resource
+    private ToolCallback[] allTools;
 
     private final ChatClient chatClient;
 
@@ -42,6 +47,7 @@ public class ChatController {
 
         Flux<String> content = chatClient.prompt(systemPrompt)
                 .user(message)
+                .tools(allTools)
                 .stream()
                 .content();
         return content.concatWith(Flux.just("[complete]"));
