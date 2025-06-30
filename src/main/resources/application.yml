@@ -13,6 +13,7 @@ spring:
         options:
           model: qwen-turbo-0919
       embedding:
+        embeddings-path: /embeddings
         options:
           model: "text-embedding-v3"
 #    retry:

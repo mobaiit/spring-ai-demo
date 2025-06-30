@@ -1,9 +1,12 @@
 package com.ai.demo.config;
 
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * @author yuchen
@@ -14,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 public class ModelConfig {
 
     // openAI 协议模型自动配置
-    /*@Bean
+    @Bean
     @Primary
     public ChatClient chatClient() {
         OpenAiApi openaiApiKey = OpenAiApi.builder()
@@ -36,5 +39,5 @@ public class ModelConfig {
 
         // 3. 创建流式聊天客户端
         return ChatClient.create(chatModel);
-    }*/
+    }
 }
