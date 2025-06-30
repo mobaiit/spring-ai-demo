@@ -50,8 +50,8 @@ public class ImageSearchTool {
         params.put("query", query);
         // large(24MP), medium(12MP) or small(4MP).
         params.put("size", "medium");
-        params.put("page", RandomUtil.randomInt(1000));
-        params.put("per_page", 1);
+        params.put("page", RandomUtil.randomInt(100));
+        params.put("per_page", 5);
         // 'en' 'zh-CN' 'es'
         params.put("locale", "zh-CN");
         log.info("search medium images query:{}", params);

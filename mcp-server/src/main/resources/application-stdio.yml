@@ -3,7 +3,7 @@ spring:
     mcp:
       server:
         name: mcp-server
-        version: 0.0.1
+        version: 1.0.0
         type: SYNC
         # stdio
         stdio: true

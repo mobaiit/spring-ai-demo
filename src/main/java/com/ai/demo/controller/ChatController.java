@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 @Slf4j
 @RestController
-@Tag(name = "聊天demo")
+@Tag(name = "SSE聊天控制器")
 @RequestMapping("/ai")
 public class ChatController {
 
