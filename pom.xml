@@ -75,7 +75,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-vector-store</artifactId>
+            <artifactId>spring-ai-advisors-vector-store</artifactId>
             <version>1.0.0</version>
         </dependency>
         <!-- knife4j openapi3 接口文档 -->

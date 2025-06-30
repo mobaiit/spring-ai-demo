@@ -175,6 +175,12 @@ public class ChatDemo {
                 ---------------------
                 根据上下文和提供的历史信息（而非先前知识），回复用户的问题。如果答案不在上下文中，请告知用户您无法回答该问题。
                 """;
+        QuestionAnswerAdvisor answerAdvisor = QuestionAnswerAdvisor
+                .builder(vectorStore)
+                .searchRequest(searchRequest)
+                .userTextAdvise(promptWithContext)
+                .build();
+
         Flux<String> chatResponse = chatClient
                 .prompt()
                 // 使用改写后的查询
@@ -182,7 +188,7 @@ public class ChatDemo {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 // 应用 RAG 知识库问答
-                .advisors(new QuestionAnswerAdvisor(vectorStore,searchRequest,promptWithContext))
+                .advisors(answerAdvisor)
                 .stream().content()
                 .onErrorResume(e -> {
                     log.error("RAG流式处理失败: {}", e.getMessage());
