@@ -1,6 +1,7 @@
 package com.ai.demo.controller;
 
 import cn.hutool.core.util.IdUtil;
+import com.ai.demo.advisor.MyLoggerAdvisor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
@@ -29,7 +30,9 @@ class DemoController {
         // 基于本地内存的聊天记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
         this.chatClient = chatClientBuilder
-                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
+                .defaultAdvisors(
+                        new MessageChatMemoryAdvisor(chatMemory),
+                        new MyLoggerAdvisor())
                 .build();
     }
 
