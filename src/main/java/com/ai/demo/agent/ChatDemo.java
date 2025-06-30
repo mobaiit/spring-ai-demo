@@ -12,7 +12,9 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -119,8 +121,8 @@ public class ChatDemo {
     //@Resource
     //private Advisor ragCloudAdvisor;
 
-    @Resource
-    private VectorStore pgVectorVectorStore;
+    //@Resource
+    //private VectorStore pgVectorVectorStore;
 
     @Resource
     private QueryRewriter queryRewriter;
@@ -164,29 +166,50 @@ public class ChatDemo {
 
     public Flux<String> doChatWithRagStream(String message, String chatId) {
         // 查询重写
-        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(message).topK(3).similarityThreshold(0.7).build();
+        String promptWithContext = """
+                下面是上下文信息
+                ---------------------
+                {question_answer_context}
+                ---------------------
+                根据上下文和提供的历史信息（而非先前知识），回复用户的问题。如果答案不在上下文中，请告知用户您无法回答该问题。
+                """;
         Flux<String> chatResponse = chatClient
                 .prompt()
                 // 使用改写后的查询
-                .user(rewrittenMessage)
+                .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                // 开启日志，便于观察效果
-                .advisors(new MyLoggerAdvisor())
                 // 应用 RAG 知识库问答
-                .advisors(new QuestionAnswerAdvisor(vectorStore))
-                // 应用 RAG 检索增强服务（基于云知识库服务）
-                //.advisors(ragCloudAdvisor)
-                // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
-//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
-                // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
-//                .advisors(
-//                        LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
-//                                loveAppVectorStore, "单身"
-//                        )
-//                )
-                .stream().content();
+                .advisors(new QuestionAnswerAdvisor(vectorStore,searchRequest,promptWithContext))
+                .stream().content()
+                .onErrorResume(e -> {
+                    log.error("RAG流式处理失败: {}", e.getMessage());
+                    return Flux.just("抱歉，我暂时无法回答这个问题");
+                });
         return chatResponse;
+    }
+
+    public Flux<ServerSentEvent<String>> chatStreamWithDatabase(String message) {
+        // 1. 定义提示词模板，question_answer_context会被替换成向量数据库中查询到的文档。
+        String promptWithContext = """
+                下面是上下文信息
+                ---------------------
+                {question_answer_context}
+                ---------------------
+                根据上下文和提供的历史信息（而非先前知识），回复用户的问题。如果答案不在上下文中，请告知用户您无法回答该问题。
+                """;
+        return chatClient.prompt()
+                .user(message)
+                // 2. QuestionAnswerAdvisor会在运行时替换模板中的占位符`question_answer_context`，替换成向量数据库中查询到的文档。此时的query=用户的提问+替换完的提示词模板;
+                .advisors(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder().build(), promptWithContext))
+                .stream()
+                // 3. query发送给大模型得到答案
+                .content()
+                .map(chatResponse -> ServerSentEvent.builder(chatResponse)
+                        .event("message")
+                        .build());
     }
 
     // AI 调用工具能力
@@ -206,8 +229,6 @@ public class ChatDemo {
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                // 开启日志，便于观察效果
-                .advisors(new MyLoggerAdvisor())
                 .tools(allTools)
                 .call()
                 .chatResponse();
@@ -234,8 +255,6 @@ public class ChatDemo {
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                // 开启日志，便于观察效果
-                .advisors(new MyLoggerAdvisor())
                 .tools(toolCallbackProvider)
                 .call()
                 .chatResponse();

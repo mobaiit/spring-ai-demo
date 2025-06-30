@@ -15,13 +15,13 @@ spring:
       embedding:
         options:
           model: "text-embedding-v3"
-    retry:
-      max-attempts: 10
-      on-client-errors: true
-      backoff:
-        multiplier: 5
-        initial-interval: 2000ms
-        max-interval: 20000ms
+#    retry:
+#      max-attempts: 10
+#      on-client-errors: true
+#      backoff:
+#        multiplier: 5
+#        initial-interval: 2000ms
+#        max-interval: 20000ms
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/aichat?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true

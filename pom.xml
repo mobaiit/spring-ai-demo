@@ -72,7 +72,11 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-markdown-document-reader</artifactId>
-            <version>1.0.0-M6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-vector-store</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <!-- knife4j openapi3 接口文档 -->
         <dependency>

@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
@@ -36,8 +37,19 @@ public class ChatController {
 
     @Operation(summary = "流式调用 tools Arg")
     @GetMapping(value = "/chat/stream")
-    public String doChatStream(String message, String chatId) {
-        return chatDemo.doChatWithRag(message, chatId);
+    public Flux<String> doChatStream(String message, String chatId) {
+        return chatDemo.doChatWithRagStream(message, chatId);
+    }
+
+    /**
+     * 从向量数据库中查找文档，并将查询的文档作为上下文回答。
+     *
+     * @param message 用户的提问
+     * @return SSE流响应
+     */
+    @GetMapping(value = "chat/stream/database", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> chatStreamWithDatabase(@RequestParam String message) {
+        return chatDemo.chatStreamWithDatabase(message);
     }
 
     @Operation(summary = "SSE 流式调用,响应文件")

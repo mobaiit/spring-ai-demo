@@ -1,5 +1,7 @@
 package com.ai.demo.rag.config;
 
+import cn.hutool.core.io.FileUtil;
+import com.ai.demo.common.constant.FileConstant;
 import com.ai.demo.rag.utils.DocumentLoader;
 import com.ai.demo.rag.utils.MyKeywordEnricher;
 import com.ai.demo.rag.utils.MyTokenTextSplitter;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -63,8 +66,11 @@ public class VectorStoreConfig {
             // 自主切分文档
             //List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documentList);
             // 自动补充关键词元信息
-            List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documentList);
-            vectorStore.add(enrichedDocuments);
+            //List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documentList);
+            String fileDir = FileConstant.FILE_SAVE_DIR +"/store";
+            FileUtil.mkdir(fileDir);
+            vectorStore.add(documentList);
+            vectorStore.save(new File(fileDir +"/vectorStore.json"));
         });
     }
 }
