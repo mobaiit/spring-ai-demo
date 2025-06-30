@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiManus extends ToolCallAgent {
 
-    public AiManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {
+    public AiManus(ToolCallback[] allTools, ChatModel openAiChatModel) {
         super(allTools);
         this.setName("AiManus");
         String SYSTEM_PROMPT = """
@@ -24,12 +24,12 @@ public class AiManus extends ToolCallAgent {
                 根据用户需求，主动选择最合适的工具或工具组合。
                 对于复杂的任务，您可以分解问题，并逐步使用不同的工具来解决。
                 使用每个工具后，清晰地解释执行结果并建议后续步骤。
-                如果您想在任何时候停止交互，请使用“terminate”工具/函数调用。
+                如果您想在任何时候停止交互，请使用“doTerminate”工具/函数调用。
                 """;
         this.setNextStepPrompt(NEXT_STEP_PROMPT);
         this.setMaxSteps(20);
         // 初始化 AI 对话客户端
-        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
+        ChatClient chatClient = ChatClient.builder(openAiChatModel)
                 .defaultAdvisors(new MyLoggerAdvisor())
                 .build();
         this.setChatClient(chatClient);

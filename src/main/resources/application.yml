@@ -23,14 +23,14 @@ spring:
         version: 1.0.0
         type: SYNC
         request-timeout: 20s
-        sse:
-          connections:
-            server1:
-              url: http://localhost:8090
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8090
 #        若存在同名工具,启动报错
-#        stdio:
-#          root-change-notification: true
-#          servers-configuration: classpath:mcp-servers.json
+        stdio:
+          root-change-notification: true
+          servers-configuration: classpath:mcp-servers.json
 #    retry:
 #      max-attempts: 10
 #      on-client-errors: true

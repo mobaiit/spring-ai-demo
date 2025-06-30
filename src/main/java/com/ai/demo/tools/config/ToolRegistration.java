@@ -18,21 +18,14 @@ public class ToolRegistration {
 
     @Bean
     public ToolCallback[] allTools() {
-        FileOperationTool fileOperationTool = new FileOperationTool();
-        WebSearchTool webSearchTool = new WebSearchTool(searchApiKey);
-        WebScrapingTool webScrapingTool = new WebScrapingTool();
-        ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
-        TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
-        PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
-        TerminateTool terminateTool = new TerminateTool();
         return ToolCallbacks.from(
-                fileOperationTool,
-                webSearchTool,
-                webScrapingTool,
-                resourceDownloadTool,
-                terminalOperationTool,
-                pdfGenerationTool,
-                terminateTool
+                new FileOperationTool(),
+                new WebSearchTool(searchApiKey),
+                new WebScrapingTool(),
+                new ResourceDownloadTool(),
+                new TerminalOperationTool(),
+                new PDFGenerationTool(),
+                new TerminateTool()
         );
     }
 }
