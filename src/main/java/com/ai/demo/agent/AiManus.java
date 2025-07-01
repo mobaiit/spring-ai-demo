@@ -3,7 +3,7 @@ package com.ai.demo.agent;
 import com.ai.demo.advisor.MyLoggerAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiManus extends ToolCallAgent {
 
-    public AiManus(ToolCallback[] allTools, ChatModel openAiChatModel) {
-        super(allTools);
+    public AiManus(ToolCallbackProvider provider, ChatModel openAiChatModel) {
+        super(provider);
         this.setName("AiManus");
         String SYSTEM_PROMPT = """
                 你是 AiManus，一个全能的 AI 助手，旨在解决用户提出的任何任务。

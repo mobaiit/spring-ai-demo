@@ -5,6 +5,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class AgentController {
 
     @Resource
-    private ToolCallback[] allTools;
+    private ToolCallbackProvider provider;
 
     @Resource
     private ChatModel openAiChatModel;
@@ -33,7 +34,7 @@ public class AgentController {
      */
     @GetMapping("/manus/chat")
     public SseEmitter doChatWithManus(String message) {
-        AiManus aiManus = new AiManus(allTools, openAiChatModel);
+        AiManus aiManus = new AiManus(provider, openAiChatModel);
         return aiManus.runStream(message);
     }
 
