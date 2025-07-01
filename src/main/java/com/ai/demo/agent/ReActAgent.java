@@ -44,7 +44,7 @@ public abstract class ReActAgent extends BaseAgent {
             return act();
         } catch (Exception e) {
             // 记录异常日志
-            e.printStackTrace();
+            log.error("step error", e);
             return "步骤执行失败：" + e.getMessage();
         }
     }

@@ -12,3 +12,7 @@ SpringBoot3.5.3 + JDK21 + Maven 3.9.9
 6. 工具调用
 7. 基于内存的ARG
 8. 自主规划智能体
+
+
+# Fork
+ [yu-ai-agent](https://github.com/liyupi/yu-ai-agent)

@@ -16,15 +16,19 @@ public class AiManus extends ToolCallAgent {
         super(provider);
         this.setName("AiManus");
         String SYSTEM_PROMPT = """
-                你是 AiManus，一个全能的 AI 助手，旨在解决用户提出的任何任务。
-                你拥有各种工具，可以高效地完成复杂的请求。
+                您是 AiManus，自主规划型AI助手，核心能力是通过工具组合解决复杂问题。
+                您必须遵守以下原则：
+                1. 任务分解：将复杂需求拆解为可执行步骤树
+                2. 工具编排：动态组合工具形成解决方案
+                3. 异常处理：当工具失败时自动重试或寻找替代方案
                 """;
         this.setSystemPrompt(SYSTEM_PROMPT);
         String NEXT_STEP_PROMPT = """
-                根据用户需求，主动选择最合适的工具或工具组合。
-                对于复杂的任务，您可以分解问题，并逐步使用不同的工具来解决。
-                使用每个工具后，清晰地解释执行结果并建议后续步骤。
-                如果您想在任何时候停止交互，请使用“doTerminate”工具/函数调用。
+                **决策规则**：
+                - 如果用户需求已满足 → 调用“doTerminate”工具结束任务
+                - 如果上步失败 → 重试或换工具
+                - 否则 → 选择最适合的工具继续
+                - 使用每个工具后，清晰地解释执行结果并建议后续步骤
                 """;
         this.setNextStepPrompt(NEXT_STEP_PROMPT);
         this.setMaxSteps(20);

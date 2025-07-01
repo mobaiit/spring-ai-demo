@@ -110,6 +110,10 @@ public class ToolCallAgent extends ReActAgent {
      */
     @Override
     public String act() {
+        // 新增：检查是否已通过直接回答终止
+        if (getState() == AgentState.FINISHED) {
+            return "任务已通过直接回答完成";
+        }
         if (!toolCallChatResponse.hasToolCalls()) {
             return "没有工具需要调用";
         }
