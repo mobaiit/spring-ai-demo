@@ -1,6 +1,5 @@
 package com.ai.demo.agent;
 
-import com.ai.demo.advisor.MyLoggerAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -25,7 +24,7 @@ public class AiManus extends ToolCallAgent {
         this.setSystemPrompt(SYSTEM_PROMPT);
         String NEXT_STEP_PROMPT = """
                 **决策规则**：
-                - 如果用户需求已满足 → 调用“doTerminate”工具结束任务
+                - 如果用户需求已满足 → 结束任务
                 - 如果上步失败 → 重试或换工具
                 - 否则 → 选择最适合的工具继续
                 - 使用每个工具后，清晰地解释执行结果并建议后续步骤
@@ -34,7 +33,7 @@ public class AiManus extends ToolCallAgent {
         this.setMaxSteps(20);
         // 初始化 AI 对话客户端
         ChatClient chatClient = ChatClient.builder(openAiChatModel)
-                .defaultAdvisors(new MyLoggerAdvisor())
+                //.defaultAdvisors(new MyLoggerAdvisor())
                 .build();
         this.setChatClient(chatClient);
     }
