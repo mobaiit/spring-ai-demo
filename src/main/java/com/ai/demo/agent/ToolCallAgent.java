@@ -47,7 +47,8 @@ public class ToolCallAgent extends ReActAgent {
         this.toolCallingManager = ToolCallingManager.builder().build();
         // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文
         this.chatOptions = OpenAiChatOptions.builder()
-                .proxyToolCalls(true)
+                .internalToolExecutionEnabled(false)
+                .parallelToolCalls(false)
                 .build();
     }
 
@@ -69,7 +70,7 @@ public class ToolCallAgent extends ReActAgent {
         try {
             ChatResponse chatResponse = getChatClient().prompt(prompt)
                     .system(getSystemPrompt())
-                    .tools(availableTools)
+                    .toolCallbacks(availableTools)
                     .call()
                     .chatResponse();
             // 记录响应，用于等下 Act
@@ -98,7 +99,7 @@ public class ToolCallAgent extends ReActAgent {
             }
         } catch (Exception e) {
             log.error(getName() + "的思考过程遇到了问题：" + e.getMessage());
-            getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()));
+            getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()+",立即停止任务"));
             return false;
         }
     }

@@ -1,12 +1,11 @@
 package com.ai.demo.agent;
 
 import com.ai.demo.advisor.MyLoggerAdvisor;
-import com.ai.demo.rag.utils.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -124,9 +123,6 @@ public class ChatDemo {
     //@Resource
     //private VectorStore pgVectorVectorStore;
 
-    @Resource
-    private QueryRewriter queryRewriter;
-
     /**
      * 和 RAG 知识库进行对话
      *
@@ -136,7 +132,7 @@ public class ChatDemo {
      */
     public String doChatWithRag(String message, String chatId) {
         // 查询重写
-        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        String rewrittenMessage = message;
         ChatResponse chatResponse = chatClient
                 .prompt()
                 // 使用改写后的查询
@@ -199,6 +195,8 @@ public class ChatDemo {
 
     public Flux<ServerSentEvent<String>> chatStreamWithDatabase(String message) {
         // 1. 定义提示词模板，question_answer_context会被替换成向量数据库中查询到的文档。
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(message).topK(3).similarityThreshold(0.7).build();
         String promptWithContext = """
                 下面是上下文信息
                 ---------------------
@@ -206,10 +204,15 @@ public class ChatDemo {
                 ---------------------
                 根据上下文和提供的历史信息（而非先前知识），回复用户的问题。如果答案不在上下文中，请告知用户您无法回答该问题。
                 """;
+        QuestionAnswerAdvisor answerAdvisor = QuestionAnswerAdvisor
+                .builder(vectorStore)
+                .searchRequest(searchRequest)
+                .userTextAdvise(promptWithContext)
+                .build();
         return chatClient.prompt()
                 .user(message)
                 // 2. QuestionAnswerAdvisor会在运行时替换模板中的占位符`question_answer_context`，替换成向量数据库中查询到的文档。此时的query=用户的提问+替换完的提示词模板;
-                .advisors(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder().build(), promptWithContext))
+                .advisors(answerAdvisor)
                 .stream()
                 // 3. query发送给大模型得到答案
                 .content()

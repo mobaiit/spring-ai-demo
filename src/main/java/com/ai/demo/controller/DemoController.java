@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.tool.ToolCallback;
@@ -82,7 +82,7 @@ class DemoController {
                 .user(userInput)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .tools(allTools)
+                .toolCallbacks(allTools)
                 .stream()
                 .content();
     }
@@ -98,7 +98,7 @@ class DemoController {
                 .user(userInput)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .tools(provider)
+                .toolCallbacks(provider)
                 .call().content();
     }
 
@@ -114,7 +114,7 @@ class DemoController {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new QuestionAnswerAdvisor(vectorStore))
-                .tools(allTools)
+                .toolCallbacks(allTools)
                 .stream()
                 .content();
     }

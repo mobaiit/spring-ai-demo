@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI友好型PDF生成工具
@@ -67,6 +64,8 @@ public class PDFGenerationTool {
             + "'type' (text/image/heading/divider), "
             + "for text: 'content' (text string), "
             + "for image: 'source' (URL or base64 data), "
+            + "Example: [{'type':'image','source':'https://example.com/image.jpg'}, "
+            + "Example: [{'type':'image','source':'D:/0_project/ai/spring-ai-demo/tmp/download/husky.jpg'}, "
             + "for heading: 'level' (1-6) and 'content' (heading text). "
             + "Example: [{'type':'heading','level':1,'content':'Title'}, "
             + "{'type':'text','content':'Paragraph text'}, "
@@ -223,34 +222,35 @@ public class PDFGenerationTool {
         document.add(divider);
     }
 
+    private final Object imageLock = new Object(); // 实例级锁
     // 增强版图片加载方法
     private Image createImageFromSource(String source) throws IOException {
-        ImageData imageData;
-        // 1. 处理Base64编码的图片
-        if (source.startsWith("data:image")) {
-            String base64Data = source.split(",")[1];
-            byte[] imageBytes = Base64.getDecoder().decode(base64Data);
-            imageData = ImageDataFactory.create(imageBytes);
+        synchronized (imageLock){
+            byte[] imageBytes = getImageBytes(source); // 获取原始字节
 
+            // 创建临时副本绕过缓存
+            byte[] uniqueBytes = Arrays.copyOf(imageBytes, imageBytes.length);
+
+            // 使用唯一字节数组创建 ImageData
+            ImageData imageData = ImageDataFactory.create(uniqueBytes);
+
+            // 创建新图片对象
+            return new Image(imageData);
         }
-        // 2. 处理URL - 使用自定义下载器避免证书问题
-        else if (source.startsWith("http")) {
-            try {
-                // 使用Hutool下载图片
-                byte[] imageBytes = HttpUtil.downloadBytes(source);
-                imageData = ImageDataFactory.create(imageBytes);
-            } catch (Exception e) {
-                throw new IOException("下载图片失败: " + e.getMessage());
-            }
-        }
-        // 3. 处理本地文件
-        else {
+    }
+
+    private byte[] getImageBytes(String source) throws IOException {
+        if (source.startsWith("data:image")) {
+            String base64Data = source.split(",", 2)[1];
+            return Base64.getDecoder().decode(base64Data);
+        } else if (source.startsWith("http")) {
+            return HttpUtil.downloadBytes(source);
+        } else {
             Path path = Paths.get(source);
             if (!Files.exists(path)) {
                 throw new IOException("图片文件不存在: " + source);
             }
-            imageData = ImageDataFactory.create(path.toAbsolutePath().toString());
+            return Files.readAllBytes(path);
         }
-        return new Image(imageData);
     }
 }

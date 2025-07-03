@@ -26,11 +26,12 @@ spring:
 #        sse:
 #          connections:
 #            server1:
-#              url: http://localhost:8090
+#              url: https://mcp.api-inference.modelscope.net/414970b626ca4a/sse
+
 #        若存在同名工具,启动报错
         stdio:
-          root-change-notification: true
           servers-configuration: classpath:mcp-servers.json
+          root-change-notification: true
 #    retry:
 #      max-attempts: 10
 #      on-client-errors: true
